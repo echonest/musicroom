@@ -1,0 +1,12 @@
+{
+  "name": "realtime",
+  "version": "0.0.0",
+  "description": "Allows web clients to interact with Redis Pub/Sub.",
+  "main": "app.js",
+  "author": "Naman Bharadwaj",
+  "license": "BSD",
+  "dependencies": {
+    "redis": "0.8.3",
+    "socket.io": "0.9.14"
+  }
+}

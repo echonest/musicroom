@@ -1,0 +1,72 @@
+<!doctype html>
+  <head>
+    <title>Music Room | {{ room.name() }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/room.css') }}">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/jquery.rdio.js') }}"></script>
+    <script src="http://localhost:5001/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://localhost:5001');
+      socket.on('connect', function () {
+        socket.emit('subscribe', {room: '{{ room.id() }}'});
+      });
+      socket.on('joined', function (data) {
+        $('#listener-list em').remove();
+        $('#listener-list').append('<li>' + data.name + '</li>');
+      });
+
+      $(function () {
+        $('#nav ul li#start-link').click(function () {
+          $.ajax('{{ url_for('start', room_id=room.id()) }}').done(function (data) {
+            $.ajax('{{ url_for('playback_token') }}').done(function (data) {
+              $('#rdio').rdio(data);
+              $('#rdio').bind('ready.rdio', function (event, userInfo) {
+                $.getJSON('{{ url_for('next', room_id=room.id(), count=3) }}', function (data) {
+                  for (var i = 0; i < data.length; i++) {
+                    console.log(data[i]);
+                    $('#rdio').rdio().queue(data[i]);
+                  }
+                  $('#rdio').rdio().play();
+                });
+              });
+            });
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="rdio"></div>
+    <div id="wrapper">
+      <div id="header">
+        {{ room.name() }}
+      </div>
+      <div id="nav">
+        <ul>
+          {% if not in_room %}
+          <li id="join-link">Join Room</li>
+          {% endif %}
+          <li id="start-link">Start Playback</li>
+        </ul>
+      </div>
+      <div id="column1-wrap">
+        <div id="column1">
+          <span class="song">Song</span>
+          <span class="artist">Artist</span>
+        </div>
+      </div>
+      <div id="column2">
+        <h2>Listeners</h2>
+        <ul id="listener-list">
+          {% for member in members %}
+          <li>{{ member.name() }}</li>
+          {% endfor %}
+          {% if members|length == 0 %}
+          <em>No listeners</em>
+          {% endif %}
+        </ul>
+      </div>
+      <div id="clear">
+    </div>
+  </body>
+</html>

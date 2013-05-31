@@ -1,0 +1,33 @@
+<!doctype html>
+  <head>
+    <title>Music Room | Me</title>
+  </head>
+  <body>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <h4>You own the following Music Rooms:</h4>
+    <ul>
+      {% for room in owned_rooms %}
+      <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
+      {% endfor %}
+      {% if owned_rooms|length == 0 %}
+      <em>None</em>
+      {% endif %}
+    </ul>
+
+    <h4>You have joined the following Music Rooms:</h4>
+    <ul>
+      {% for room in joined_rooms %}
+      <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
+      {% endfor %}
+      {% if joined_rooms|length == 0 %}
+      <em>None</em>
+      {% endif %}
+    </ul>
+  </body>
+</html>
