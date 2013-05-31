@@ -96,11 +96,32 @@ def join(room_id):
 
   if not me.in_room(room):
     me.join_room(room)
-    redis.publish('push', json.dumps({'room': room_id, 'name': 'joined', 'data': {'name': me.name()}}))
+    # redis.publish('push', json.dumps({'room': room_id, 'name': 'joined', 'data': {'name': me.name()}}))
 
-  return "joined room"
+  # TODO - Give better response
+  return ""
 
-@app.route('/room/<room_id>/start')
+@app.route('/room/<room_id>/playback')
+def playback(room_id):
+  try:
+    room = Room(room_id)
+  except NonexistentError:
+    abort(404)
+
+  try:
+    me = User()
+  except APIError:
+    abort(500)
+  except UnauthorizedError:
+    return redirect(url_for('login', next=request.url))
+
+  if (me != room.owner()):
+    abort(401)
+  else:
+    return render_template('speaker.html', room=room)
+
+
+@app.route('/room/<room_id>/action/start')
 def start(room_id):
   try:
     room = Room(room_id)
@@ -134,13 +155,14 @@ def start(room_id):
     time.sleep(0.1)
 
   pl = room.playlist(generate=True)
-  return str(pl.session_id)
-  # next_song = pl.get_next_songs(lookahead='1')[0]
-  # next_track = next_song.get_tracks('rdio-US')[0]
-  # return next_track['foreign_id']
+  pl.get_next_songs(results='0', lookahead='1')
+  song = pl.get_lookahead_songs()[0]
+  track = song.get_tracks('rdio-US')[0]
+  rdio_id = track['foreign_id'].split(':')[-1]
+  return json.dumps({'song_id': song.id, 'rdio_id': rdio_id, 'artist': song.artist_name, 'title': song.title})
 
-@app.route('/room/<room_id>/next')
-def next(room_id):
+@app.route('/room/<room_id>/action/play')
+def play(room_id):
   try:
     room = Room(room_id)
   except NonexistentError:
@@ -154,14 +176,11 @@ def next(room_id):
     return redirect(url_for('login', next=request.url))
 
   pl = room.playlist()
-  count = request.args.get('count')
-  if count is None:
-    count = '1'
-  pl.get_next_songs(results='0',lookahead=count)
-  next_songs = pl.get_lookahead_songs()
-  print next_songs
-  tracks = map(lambda song: song.get_tracks('rdio-US')[0]['foreign_id'], next_songs)
-  return json.dumps(map(lambda track: track.split(':')[-1], tracks))
+  pl.get_next_songs(results='1', lookahead='1')
+  song = pl.get_lookahead_songs()[0]
+  track = song.get_tracks('rdio-US')[0]
+  rdio_id = track['foreign_id'].split(':')[-1]
+  return json.dumps({'song_id': song.id, 'rdio_id': rdio_id, 'artist': song.artist_name, 'title': song.title})
 
 @app.route('/playback_token')
 def playback_token():

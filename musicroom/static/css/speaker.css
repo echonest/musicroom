@@ -1,0 +1,31 @@
+#wrapper {
+  width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#details {
+  width: 100%;
+  margin: 40px 0px 0px 0px;
+  text-align: center;
+}
+
+#header {
+  width: 100%;
+  font-size: 20px;
+  color: #666666;
+  text-align: center;
+}
+
+#details span {
+  display: block;
+  text-align: center;
+}
+
+#details span.song {
+  font-size: 40px;
+}
+
+#details span.artist {
+  font-size: 20px;
+}
