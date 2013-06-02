@@ -1,7 +1,11 @@
 pushd "$(dirname "$0")"
 
+python clean_catalogs.py
+
 cd ..
 sqlite3 musicroom.db < utils/schema.sql
-node utils/clean_catalogs.js
+
+cd realtime
+npm install
 
 popd
