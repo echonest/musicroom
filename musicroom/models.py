@@ -32,7 +32,6 @@ class NonexistentError(Exception):
 
 class User:
   def __init__(self, fbid=None, name=None):
-    # TODO fix this shit
     if fbid is None:
       try:
         me = facebook.get('me')

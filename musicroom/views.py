@@ -218,7 +218,6 @@ def play(room_id):
     return redirect(url_for('login', next=request.url))
 
   pl = room.playlist()
-  print room.cur_song()
   if room.cur_song()['song_id'] is not None and room.num_members() > 0:
     pl.feedback(rate_song='last^'+str(room.get_cur_rating()))
   pl.get_next_songs(results='1', lookahead='1')
@@ -234,7 +233,6 @@ def play(room_id):
   }
   room.set_song(current)
   redis.publish('push', json.dumps({'room': room_id, 'name': 'playing', 'data': current}))
-  print current
 
   next_song = pl.get_lookahead_songs()[0]
   next_track = next_song.get_tracks('rdio-US')[0]
