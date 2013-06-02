@@ -1,70 +1,56 @@
 #wrapper {
-  width: 800px;
+  width: 400px;
   margin-left: auto;
   margin-right: auto;
-}
-#column1-wrap {
-  float: left;
-  width: 100%;
-}
-
-#column1 {
-  margin-right: 300px;
-  padding-top: 200px;
-}
-
-#column2 {
-  float: left;
-  width: 300px;
-  margin-left: -300px;
-  padding-top: 50px;
+  margin-top: 50px;
 }
 
 #header {
   width: 100%;
-  font-size: 40px;
-  color: #dd1111;
+  font-size: 20px;
+  color: #666666;
   text-align: center;
 }
 
-#nav {
-  width:100%;
+ul#links {
+  list-style-type: none;
   text-align: center;
-  font-variant: small-caps;
-  color: #1111cc;
 }
-
-#nav ul li {
-  width: 120px;
+ul#links li {
   display: inline-block;
-  margin: 0;
-  padding: 0;
-  cursor: pointer;
+  margin: 0px 5px 0px 5px;
+  font-size: 12px;
+  font-family: helvetica, sans-serif;
+}
+ul#links li a {
+  color: #111111;
 }
 
-#column1 span {
+#content {
+  margin-top: 50px;
+}
+
+#song-info {
+  width: 100%;
+  margin: 40px 0px 0px 0px;
+  text-align: center;
+}
+#song-info span {
   display: block;
   text-align: center;
 }
+#song-info span.song {
+  font-size: 40px;
+}
+#song-info span.artist {
+  font-size: 20px;
+}
 
-#column1 span.song {
+#feedback {
   font-size: 30px;
 }
 
-#column1 span.artist {
-  font-size: 20px;
-}
-
-#column2 h2 {
-  font-weight: normal;
-  font-size: 20px;
-}
-
-#column2 ul {
-  list-style-type: none;
-  padding-left: 0px;
-}
-
-#clear {
-  clear: both;
+#feedback span {
+  display: inline-block;
+  cursor: pointer;
 }

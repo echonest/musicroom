@@ -14,59 +14,28 @@
         $('#listener-list em').remove();
         $('#listener-list').append('<li>' + data.name + '</li>');
       });
-
-      $(function () {
-        $('#nav ul li#start-link').click(function () {
-            $.ajax('{{ url_for('playback_token') }}').done(function (data) {
-              $('#rdio').rdio(data);
-            });
-        });
-
-        $('#rdio').bind('ready.rdio', function (event, userInfo) {
-          $.getJSON('{{ url_for('start', room_id=room.id()) }}', function (data) {
-            $('#rdio').rdio().play(data.rdio_id);
-          });
-        });
-
-        $('#rdio').bind('playingTrackChanged.rdio', function (event, playingTrack, sourcePosition) {
-          console.log(playingTrack);
-          $('.song').html(playingTrack.name);
-          $('.artist').html(playingTrack.artist);
-          $.getJSON('{{ url_for('play', room_id=room.id()) }}', function (data) {
-            $('#rdio').rdio().queue(data.rdio_id);
-          });
-        });
-      });
     </script>
   </head>
   <body>
     <div id="rdio"></div>
     <div id="wrapper">
       <div id="header">
-        {{ room.name() }}
+        Music Room | {{ room.name() }}
       </div>
-      <div id="nav">
-        <ul>
-          {% if not in_room %}
-          <li id="join-link">Join Room</li>
+      <div id="content">
+        <ul id="links">
+          {% if in_room %}
+          <li id="leave-link"><a href="{{ url_for('leave', room_id=room.id()) }}">Leave Room (as Listener)</a></li>
+          {% else %}
+          <li id="join-link"><a href="{{ url_for('join', room_id=room.id()) }}">Join Room (as Listener)</a></li>
           {% endif %}
-          <li id="start-link">Start Playback</li>
-        </ul>
-      </div>
-      <div id="column1-wrap">
-        <div id="column1">
-          <span class="song">Song</span>
-          <span class="artist">Artist</span>
-        </div>
-      </div>
-      <div id="column2">
-        <h2>Listeners</h2>
-        <ul id="listener-list">
-          {% for member in members %}
-          <li>{{ member.name() }}</li>
-          {% endfor %}
-          {% if members|length == 0 %}
-          <em>No listeners</em>
+          {% if is_owner %}
+            {% if room.num_members() > 0 %}
+            <li id="start-link"><a href="{{ url_for('playback', room_id=room.id()) }}">Start Playback</a></li>
+            {% elif in_room %}
+            <li id="listen-link"><a href="{{ url_for('listen', room_id=room.id()) }}">Listener Page</a></li>
+            {% endif %}
+            <li id="delete-link"><a href="{{ url_for('delete', room_id=room.id()) }}">Delete Room</a></li>
           {% endif %}
         </ul>
       </div>

@@ -1,5 +1,5 @@
 from musicroom import facebook, app, base_url
-from flask import request, session, url_for
+from flask import request, session, url_for, redirect
 
 @facebook.tokengetter
 def get_facebook_token(token=None):
@@ -7,7 +7,7 @@ def get_facebook_token(token=None):
 
 @app.route('/login')
 def login():
-  return facebook.authorize(base_url + url_for('facebook_authorized',
+  return facebook.authorize(url_for('facebook_authorized', _external=True,
     next=request.args.get('next') or request.referrer or url_for('index')))
 
 @app.route('/facebook-authorized')
@@ -19,5 +19,4 @@ def facebook_authorized(resp):
 
   session['facebook_token'] = (resp['access_token'], '')
 
-  flash(u'You were signed in.')
   return redirect(request.args.get('next'))

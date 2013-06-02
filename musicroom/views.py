@@ -11,7 +11,7 @@ BASE_URL = 'http://localhost:5000'
 
 @app.route('/')
 def index():
-  return "Music Room"
+  return redirect(url_for('profile'))
 
 @app.route('/me/')
 def profile():
@@ -22,12 +22,9 @@ def profile():
   except UnauthorizedError:
     return redirect(url_for('login', next=request.url))
 
-  owned_rooms = user.get_owned_rooms()
-  joined_rooms = user.get_joined_rooms()
   return render_template(
     'profile.html',
-    owned_rooms=owned_rooms,
-    joined_rooms=joined_rooms
+    user=user
   )
 
 @app.route('/room/create')
@@ -58,6 +55,25 @@ def create():
 
   return redirect(url_for('profile'))
 
+@app.route('/room/<room_id>/delete')
+def delete(room_id):
+  try:
+    me = User()
+  except APIError:
+    abort(500)
+  except UnauthorizedError:
+    return redirect(url_for('login', next=request.url))
+
+  try:
+    room = Room(room_id)
+  except NonexistentError:
+    abort(404)
+
+  if me == room.owner():
+    room.delete()
+
+  return redirect(url_for('profile'))
+
 @app.route('/room/<room_id>/')
 def room(room_id):
   try:
@@ -72,13 +88,23 @@ def room(room_id):
   except NonexistentError:
     abort(404)
 
-  if (me == room.owner()):
-    # Show speaker / admin page
-    return render_template('speaker.html', room=room, members=room.members(), in_room=me.in_room(room))
-  else:
-    # Show listener page
-    return "YOU ARE NOT THE MAN"
-    # return render_template('speaker.html', room=room, listeners=len(room['listeners']), listener_link=url_for('listener', mrid=mrid), start_link=url_for('start', mrid=mrid))
+  return render_template('room.html', room=room, in_room=me.in_room(room), is_owner=(me == room.owner()))
+
+@app.route('/room/<room_id>/listen')
+def listen(room_id):
+  try:
+    room = Room(room_id)
+  except NonexistentError:
+    abort(404)
+
+  try:
+    me = User()
+  except APIError:
+    abort(500)
+  except UnauthorizedError:
+    return redirect(url_for('login', next=request.url))
+
+  return render_template('listen.html', room=room)
 
 @app.route('/room/<room_id>/join')
 def join(room_id):
@@ -96,10 +122,27 @@ def join(room_id):
 
   if not me.in_room(room):
     me.join_room(room)
-    # redis.publish('push', json.dumps({'room': room_id, 'name': 'joined', 'data': {'name': me.name()}}))
 
-  # TODO - Give better response
-  return ""
+  return redirect(url_for('room', room_id=room_id))
+
+@app.route('/room/<room_id>/leave')
+def leave(room_id):
+  try:
+    room = Room(room_id)
+  except NonexistentError:
+    abort(404)
+
+  try:
+    me = User()
+  except APIError:
+    abort(500)
+  except UnauthorizedError:
+    return redirect(url_for('login', next=request.url))
+
+  if me.in_room(room):
+    me.leave_room(room)
+
+  return redirect(url_for('room', room_id=room_id))
 
 @app.route('/room/<room_id>/playback')
 def playback(room_id):
@@ -118,8 +161,7 @@ def playback(room_id):
   if (me != room.owner()):
     abort(401)
   else:
-    return render_template('speaker.html', room=room)
-
+    return render_template('playback.html', room=room)
 
 @app.route('/room/<room_id>/action/start')
 def start(room_id):
@@ -176,11 +218,67 @@ def play(room_id):
     return redirect(url_for('login', next=request.url))
 
   pl = room.playlist()
+  print room.cur_song()
+  if room.cur_song()['song_id'] is not None and room.num_members() > 0:
+    pl.feedback(rate_song='last^'+str(room.get_cur_rating()))
   pl.get_next_songs(results='1', lookahead='1')
-  song = pl.get_lookahead_songs()[0]
-  track = song.get_tracks('rdio-US')[0]
-  rdio_id = track['foreign_id'].split(':')[-1]
-  return json.dumps({'song_id': song.id, 'rdio_id': rdio_id, 'artist': song.artist_name, 'title': song.title})
+
+  cur_song = pl.get_current_songs()[0]
+  cur_track = cur_song.get_tracks('rdio-US')[0]
+  cur_rdio_id = cur_track['foreign_id'].split(':')[-1]
+  current = {
+    'song_id': cur_song.id,
+    'rdio_id': cur_rdio_id,
+    'artist': cur_song.artist_name,
+    'title': cur_song.title
+  }
+  room.set_song(current)
+  redis.publish('push', json.dumps({'room': room_id, 'name': 'playing', 'data': current}))
+  print current
+
+  next_song = pl.get_lookahead_songs()[0]
+  next_track = next_song.get_tracks('rdio-US')[0]
+  next_rdio_id = next_track['foreign_id'].split(':')[-1]
+  return json.dumps({
+    'song_id': next_song.id,
+    'rdio_id': next_rdio_id,
+    'artist': next_song.artist_name,
+    'title': next_song.title
+  })
+
+@app.route('/room/<room_id>/action/like')
+def like(room_id):
+  try:
+    room = Room(room_id)
+  except NonexistentError:
+    abort(404)
+
+  try:
+    me = User()
+  except APIError:
+    abort(500)
+  except UnauthorizedError:
+    return redirect(url_for('login', next=request.url))
+
+  me.like(room);
+  return "ok"
+
+@app.route('/room/<room_id>/action/dislike')
+def dislike(room_id):
+  try:
+    room = Room(room_id)
+  except NonexistentError:
+    abort(404)
+
+  try:
+    me = User()
+  except APIError:
+    abort(500)
+  except UnauthorizedError:
+    return redirect(url_for('login', next=request.url))
+
+  me.dislike(room);
+  return "ok"
 
 @app.route('/playback_token')
 def playback_token():

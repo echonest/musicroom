@@ -1,33 +1,41 @@
 <!doctype html>
   <head>
     <title>Music Room | Me</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/room.css') }}">
   </head>
   <body>
-    {% if messages %}
-      <ul>
-        {% for message in messages %}
-        <li>{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
-    <h4>You own the following Music Rooms:</h4>
-    <ul>
-      {% for room in owned_rooms %}
-      <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
-      {% endfor %}
-      {% if owned_rooms|length == 0 %}
-      <em>None</em>
-      {% endif %}
-    </ul>
+    <div id="wrapper">
+      <div id="header">
+        Music Room | {{ user.name() }}
+      </div>
+      <div id="content">
+        <h4>Create a new Music Room:</h4>
+        <form method="get" action="{{ url_for('create') }}">
+          <input type="textbox" name="name" placeholder="Name">
+          <input type="submit">
+        </form>
+        <h4>You own the following Music Rooms:</h4>
+        <ul>
+          {% set owned_rooms = user.owned_rooms() %}
+          {% for room in owned_rooms %}
+          <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
+          {% endfor %}
+          {% if owned_rooms|length == 0 %}
+          <em>None</em>
+          {% endif %}
+        </ul>
 
-    <h4>You have joined the following Music Rooms:</h4>
-    <ul>
-      {% for room in joined_rooms %}
-      <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
-      {% endfor %}
-      {% if joined_rooms|length == 0 %}
-      <em>None</em>
-      {% endif %}
-    </ul>
+        <h4>You have joined the following Music Rooms:</h4>
+        <ul>
+          {% set joined_rooms = user.joined_rooms() %}
+          {% for room in joined_rooms %}
+          <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
+          {% endfor %}
+          {% if joined_rooms|length == 0 %}
+          <em>None</em>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
   </body>
 </html>

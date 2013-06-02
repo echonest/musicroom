@@ -1,3 +1,4 @@
 env/
 realtime/node_modules/
 .DS_Store
+musicroom.db

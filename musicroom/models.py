@@ -7,7 +7,7 @@ import string
 from flask import g
 from flask_oauth import OAuthException
 
-DATABASE = 'db.sqlite'
+DATABASE = 'musicroom.db'
 
 def connect_db():
   return sqlite3.connect(DATABASE)
@@ -112,15 +112,23 @@ class User:
     g.db.execute('delete from memberof where user_fbid = ? and room_id = ?;', (self._fbid, room.id()))
     g.db.commit()
 
-  # get_owned_rooms : () -> Room list
-  def get_owned_rooms(self):
+  # owned_rooms : () -> Room list
+  def owned_rooms(self):
     cur = g.db.execute('select id from room where owner_fbid = ?', (self._fbid,))
     return map(lambda row: Room(row[0]), cur)
 
-  # get_joined_rooms : () -> Room list
-  def get_joined_rooms(self):
+  # joined_rooms : () -> Room list
+  def joined_rooms(self):
     cur = g.db.execute('select room_id from memberof where user_fbid = ?', (self._fbid,))
     return map(lambda row: Room(row[0]), cur)
+
+  def like(self, room):
+    g.db.execute('insert or replace into rates_song values (?, ?, 1)', (self._fbid, room.id()))
+    g.db.commit()
+
+  def dislike(self, room):
+    g.db.execute('insert or replace into rates_song values (?, ?, -1)', (self._fbid, room.id()))
+    g.db.commit()
 
 class Room:
   def __init__(self, id=None, name=None, owner=None, findable=True):
@@ -132,7 +140,7 @@ class Room:
       while True:
         try:
           id = ''.join([random.choice(string.letters[:26]) for i in xrange(8)])
-          g.db.execute('insert into room values (?, ?, ?, null, null, 0, ?);', (id, name, findable, owner._fbid))
+          g.db.execute('insert into room values (?, ?, ?, null, null, 0, ?, null, null, null, null);', (id, name, findable, owner._fbid))
           g.db.commit()
         except:
           continue
@@ -144,6 +152,11 @@ class Room:
         raise NonexistentError()
 
     self._id = id
+
+  def delete(self):
+    g.db.execute('delete from rates_song where room_id = ?', (self._id,))
+    g.db.execute('delete from room where id = ?', (self._id,))
+    g.db.commit()
 
   # id : () -> string
   def id(self):
@@ -238,3 +251,24 @@ class Room:
       mapping[row[0]] = row[1]
     return mapping
 
+  def cur_song(self):
+    cur = g.db.execute('select cur_song_id, cur_rdio_id, cur_artist, cur_title from room where id = ?', (self._id,))
+    row = cur.fetchone()
+    return {'song_id': row[0], 'rdio_id': row[1], 'artist': row[2], 'title': row[3]}
+
+  def set_song(self, song):
+    g.db.execute(
+      'update room set cur_song_id = ?, cur_rdio_id = ?, cur_artist = ?, cur_title = ? where id = ?',
+      (song['song_id'], song['rdio_id'], song['artist'], song['title'], self._id)
+    )
+    g.db.execute('delete from rates_song where room_id = ?', (self._id,))
+    g.db.commit()
+
+  def get_cur_rating(self):
+    cur = g.db.execute('select sum(rating) from rates_song where room_id = ? group by room_id', (self._id,))
+    row = cur.fetchone()
+    if row is None:
+      sum_ = 0
+    else:
+      sum_ = row[0]
+    return int(round(((float(sum_) / self.num_members()) + 1) * 5))

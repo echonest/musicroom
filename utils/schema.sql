@@ -1,10 +1,8 @@
 drop table if exists likes_artist;
-drop table if exists rates_play;
-drop table if exists play;
+drop table if exists rates_song;
 drop table if exists memberof;
 drop table if exists room;
 drop table if exists user;
-
 
 create table user (
   fbid varchar(40),
@@ -21,6 +19,10 @@ create table room (
   playlist varchar(20),
   status integer not null,
   owner_fbid varchar(20) not null,
+  cur_song_id varchar(20),
+  cur_rdio_id varchar(20),
+  cur_artist varchar(50),
+  cur_title varchar(50),
   primary key (id),
   foreign key (owner_fbid) references user(fbid),
   check (status in (0, 1, 2))
@@ -38,24 +40,13 @@ create table memberof (
   foreign key (room_id) references room(id)
 );
 
-create table play (
-  id integer,
-  room_id varchar(20),
-  song_id varchar(20),
-  rdio_id varchar(20),
-  title varchar(50),
-  artist varchar(50),
-  primary key (id),
-  foreign key (room_id) references room(id)
-);
-
-create table rates_play (
+create table rates_song (
   user_fbid varchar(20),
-  play_id integer,
+  room_id integer,
   rating integer,
-  primary key (user_fbid, play_id),
+  primary key (user_fbid, room_id),
   foreign key (user_fbid) references user(fbid),
-  foreign key (play_id) references play(id),
+  foreign key (room_id) references room(id),
   check (rating in (-1, 1))
 );
 

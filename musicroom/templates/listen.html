@@ -1,0 +1,51 @@
+<!doctype html>
+  <head>
+    <title>Music Room | {{ room.name() }}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/room.css') }}">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.1/jquery.min.js"></script>
+    <script src="http://localhost:5001/socket.io/socket.io.js">
+    <script src="{{ url_for('static', filename='js/jquery.rdio.js') }}"></script>
+    <script>
+      $(function () {
+        var socket = io.connect('http://localhost:5001')
+
+        socket.on('connect', function () {
+          socket.emit('subscribe', {room: '{{ room.id() }}'});
+        });
+
+        socket.on('playing', function (data) {
+          $('.song').html(data.title);
+          $('.artist').html(data.artist);
+        });
+
+        $('#feedback span#plus').click(function (eventObj) {
+          $('#feedback span#plus').css('color', 'red');
+          $('#feedback span#minus').css('color', 'black');
+          $.ajax('{{ url_for('like', room_id=room.id()) }}');
+        });
+
+        $('#feedback span#minus').click(function (eventObj) {
+          $('#feedback span#minus').css('color', 'red');
+          $('#feedback span#plus').css('color', 'black');
+          $.ajax('{{ url_for('dislike', room_id=room.id()) }}');
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="header">
+        Music Room | {{ room.name() }}
+      </div>
+      <div id="song-info">
+        {% set cur_song = room.cur_song() %}
+        <span class="song">{{ cur_song['title'] }}</span>
+        <span class="artist">{{ cur_song['artist'] }}</span>
+        <div id="feedback">
+          <span id="plus">+</span>
+          <span id="minus">-</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
