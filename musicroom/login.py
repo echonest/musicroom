@@ -1,4 +1,4 @@
-from musicroom import facebook, app, base_url
+from musicroom import facebook, app
 from flask import request, session, url_for, redirect
 
 @facebook.tokengetter

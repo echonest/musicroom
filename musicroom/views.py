@@ -4,7 +4,7 @@ from pyechonest import catalog, playlist
 import time
 import json
 
-from musicroom import app, facebook, rdio_token, redis
+from musicroom import app, facebook, rdio_token, redis, domain
 from musicroom.models import APIError, UnauthorizedError, NonexistentError, Room, User
 
 BASE_URL = 'http://localhost:5000'
@@ -104,7 +104,7 @@ def listen(room_id):
   except UnauthorizedError:
     return redirect(url_for('login', next=request.url))
 
-  return render_template('listen.html', room=room)
+  return render_template('listen.html', domain=domain, room=room)
 
 @app.route('/room/<room_id>/join')
 def join(room_id):
@@ -282,4 +282,4 @@ def dislike(room_id):
 
 @app.route('/playback_token')
 def playback_token():
-  return rdio_token['result']
+  return rdio_token()

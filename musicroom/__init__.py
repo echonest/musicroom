@@ -4,7 +4,7 @@ from pyechonest import config
 from redis import StrictRedis
 from rdio import Rdio
 
-base_url = 'http://localhost:5000'
+domain = 'localhost'
 
 app = Flask(__name__)
 
@@ -28,8 +28,13 @@ facebook = oauth.remote_app('facebook',
 
 redis = StrictRedis()
 
+_rdio_token = None
 _rdio = Rdio(('yjgnkcp2kr8ykwwjtujb5ajv', 'trpsv6n6gm'))
-rdio_token = _rdio.call('getPlaybackToken', {'domain': 'localhost'})
+def rdio_token():
+  global _rdio_token
+  if _rdio_token is None:
+    _rdio_token = _rdio.call('getPlaybackToken', {'domain': domain})['result']
+  return _rdio_token
 
 import musicroom.login
 import musicroom.models
