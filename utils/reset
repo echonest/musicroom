@@ -1,8 +1,7 @@
-pushd
-cd "$(dirname "$0")"
+pushd "$(dirname "$0")"
 
 cd ..
-sqlite musicroom.db < utils/schema.sql
+sqlite3 musicroom.db < utils/schema.sql
 node utils/clean_catalogs.js
 
 popd

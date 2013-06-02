@@ -1,5 +1,4 @@
-pushd
-cd "$(dirname "$0")"
+pushd "$(dirname "$0")"
 
 trap 'kill $(jobs -p)' EXIT
 
