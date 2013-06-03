@@ -153,6 +153,7 @@ class Room:
     self._id = id
 
   def delete(self):
+    g.db.execute('delete from memberof where room_id = ?', (self._id))
     g.db.execute('delete from rates_song where room_id = ?', (self._id,))
     g.db.execute('delete from room where id = ?', (self._id,))
     g.db.commit()
