@@ -159,6 +159,11 @@ class Room:
     g.db.execute('delete from room where id = ?', (self._id,))
     g.db.commit()
 
+  @classmethod
+  def public_rooms(cls):
+    cur = g.db.execute('select id from room where findable = 1')
+    return map(lambda row: cls(row[0]), cur)
+
   # id : () -> string
   def id(self):
     return self._id

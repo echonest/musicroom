@@ -35,6 +35,16 @@
           <em>None</em>
           {% endif %}
         </ul>
+
+        <h4>The following Music Rooms are public:</h4>
+        <ul>
+          {% for room in public %}
+          <li><a href="{{ url_for('room', room_id=room.id()) }}">{{ room.name() }}</a></li>
+          {% endfor %}
+          {% if public|length == 0 %}
+          <em>None</em>
+          {% endif %}
+        </ul>
       </div>
     </div>
   </body>

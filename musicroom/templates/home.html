@@ -1,0 +1,18 @@
+<!doctype html>
+  <head>
+    <title>Music Room | Home</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/room.css') }}">
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="header">
+        Music Room
+      </div>
+      <div id="content">
+        Music Room automatically generates a playlist based on the tastes of you and your friends.
+        Create a Music Room and play it back, allowing your friends to listen and give real time feedback.
+        <span><a href="{{ url_for('profile') }}">Login with Facebook</a></span>
+      </div>
+    </div>
+  </body>
+</html>

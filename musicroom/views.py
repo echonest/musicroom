@@ -11,7 +11,7 @@ BASE_URL = 'http://localhost:5000'
 
 @app.route('/')
 def index():
-  return redirect(url_for('profile'))
+  return render_template('home.html')
 
 @app.route('/me/')
 def profile():
@@ -24,7 +24,8 @@ def profile():
 
   return render_template(
     'profile.html',
-    user=user
+    user=user,
+    public=Room.public_rooms()
   )
 
 @app.route('/room/create')
