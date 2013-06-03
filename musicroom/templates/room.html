@@ -25,14 +25,13 @@
         <ul id="links">
           {% if in_room %}
           <li id="leave-link"><a href="{{ url_for('leave', room_id=room.id()) }}">Leave Room (as Listener)</a></li>
+          <li id="listen-link"><a href="{{ url_for('listen', room_id=room.id()) }}">Listener Page</a></li>
           {% else %}
           <li id="join-link"><a href="{{ url_for('join', room_id=room.id()) }}">Join Room (as Listener)</a></li>
           {% endif %}
           {% if is_owner %}
             {% if room.num_members() > 0 %}
             <li id="start-link"><a href="{{ url_for('playback', room_id=room.id()) }}">Start Playback</a></li>
-            {% elif in_room %}
-            <li id="listen-link"><a href="{{ url_for('listen', room_id=room.id()) }}">Listener Page</a></li>
             {% endif %}
             <li id="delete-link"><a href="{{ url_for('delete', room_id=room.id()) }}">Delete Room</a></li>
           {% endif %}
