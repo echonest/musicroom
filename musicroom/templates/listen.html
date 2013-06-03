@@ -3,7 +3,7 @@
     <title>Music Room | {{ room.name() }}</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/room.css') }}">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.1/jquery.min.js"></script>
-    <script src="http://{{ domain }}:5001/socket.io/socket.io.js">
+    <script src="{{ url_for('static', filename='js/socket.io.js') }}"></script>
     <script src="{{ url_for('static', filename='js/jquery.rdio.js') }}"></script>
     <script>
       $(function () {
