@@ -154,7 +154,7 @@ class Room:
 
   def delete(self):
     self.seed_catalog().delete()
-    g.db.execute('delete from memberof where room_id = ?', (self._id))
+    g.db.execute('delete from memberof where room_id = ?', (self._id,))
     g.db.execute('delete from rates_song where room_id = ?', (self._id,))
     g.db.execute('delete from room where id = ?', (self._id,))
     g.db.commit()
@@ -197,6 +197,7 @@ class Room:
     result = cur.fetchone()[0]
     if result is not None:
       try:
+        print "using existing playlist"
         pl = playlist.Playlist(session_id=result)
       except EchoNestAPIError:
         pass # The playlist has probably expired. Just create a new one.
