@@ -220,9 +220,8 @@ def play(room_id):
   pl = room.playlist()
   if room.cur_song()['song_id'] is not None and room.num_members() > 0:
     pl.feedback(rate_song='last^'+str(room.get_cur_rating()))
-  pl.get_next_songs(results='1', lookahead='1')
 
-  cur_song = pl.get_current_songs()[0]
+  cur_song = pl.get_lookahead_songs()[0]
   cur_track = cur_song.get_tracks('rdio-US')[0]
   cur_rdio_id = cur_track['foreign_id'].split(':')[-1]
   current = {
@@ -231,8 +230,12 @@ def play(room_id):
     'artist': cur_song.artist_name,
     'title': cur_song.title
   }
+  pl.feedback(play_song=current['song_id'])
+
   room.set_song(current)
   redis.publish('push', json.dumps({'room': room_id, 'name': 'playing', 'data': current}))
+
+  pl.get_next_songs(results='0', lookahead='1')
 
   next_song = pl.get_lookahead_songs()[0]
   next_track = next_song.get_tracks('rdio-US')[0]
